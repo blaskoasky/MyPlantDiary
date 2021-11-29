@@ -68,6 +68,9 @@ class MainFragment : Fragment() {
         mainFragmentBinding.btnGallery.setOnClickListener {
             prepOpenGallery()
         }
+        mainFragmentBinding.imgView.setOnClickListener {
+            prepOpenGallery()
+        }
     }
 
     private fun prepOpenGallery() {
