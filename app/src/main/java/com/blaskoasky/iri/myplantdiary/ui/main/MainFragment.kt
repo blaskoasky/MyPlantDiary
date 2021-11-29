@@ -1,5 +1,6 @@
 package com.blaskoasky.iri.myplantdiary.ui.main
 
+import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -26,14 +27,16 @@ class MainFragment : Fragment() {
 
     companion object {
         fun newInstance() = MainFragment()
-        const val CAMERA_PERMISSION_REQUEST_CODE = 3001
+        const val PERMISSION_REQUEST_CAMERA = 3001
         const val CAMERA_REQUEST_CODE = 3002
         const val SAVE_PHOTO_IMAGE_REQUEST_CODE = 3003
         const val IMAGE_GALLERY_REQUEST = 3004
+        const val PERMISSION_REQUEST_LOCATION = 3005
     }
 
     private lateinit var mainFragmentBinding: MainFragmentBinding
     private lateinit var viewModel: MainViewModel
+    private lateinit var locationViewModel: LocationViewModel
 
     private lateinit var currentPhotoPath: String
 
@@ -71,14 +74,10 @@ class MainFragment : Fragment() {
         mainFragmentBinding.imgView.setOnClickListener {
             prepOpenGallery()
         }
+
+        prepRequestLocationUpdates()
     }
 
-    private fun prepOpenGallery() {
-        Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI).apply {
-            type = "image/*"
-            startActivityForResult(this, IMAGE_GALLERY_REQUEST)
-        }
-    }
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -88,7 +87,7 @@ class MainFragment : Fragment() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
         when (requestCode) {
-            CAMERA_PERMISSION_REQUEST_CODE -> {
+            PERMISSION_REQUEST_CAMERA -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     takePhoto()
                 } else {
@@ -99,9 +98,21 @@ class MainFragment : Fragment() {
                     ).show()
                 }
             }
+            PERMISSION_REQUEST_LOCATION -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    locationUpdates()
+                } else {
+                    Toast.makeText(
+                        context,
+                        "Unable to find location without permission",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
         }
     }
 
+    // BUKA CAMERA PERMISSION
     private fun prepTakePhoto() {
         if (ContextCompat.checkSelfPermission(
                 requireContext(),
@@ -111,10 +122,11 @@ class MainFragment : Fragment() {
             takePhoto()
         } else {
             val permissionRequest = arrayOf(android.Manifest.permission.CAMERA)
-            requestPermissions(permissionRequest, CAMERA_PERMISSION_REQUEST_CODE)
+            requestPermissions(permissionRequest, PERMISSION_REQUEST_CAMERA)
         }
     }
 
+    // AMBIL POTO
     private fun takePhoto() {
         Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
             takePictureIntent.resolveActivity(requireContext().packageManager)
@@ -136,6 +148,7 @@ class MainFragment : Fragment() {
         }
     }
 
+    // SAVE PHOTO
     private fun createImageFile(): File {
         val timestamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
         val storageDir: File? = requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES)
@@ -145,6 +158,42 @@ class MainFragment : Fragment() {
         }
     }
 
+    // OPEN GALLERY
+    private fun prepOpenGallery() {
+        Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI).apply {
+            type = "image/*"
+            startActivityForResult(this, IMAGE_GALLERY_REQUEST)
+        }
+    }
+
+    // PERMISSION GPS
+    private fun prepRequestLocationUpdates() {
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            locationUpdates()
+        } else {
+            val permissionRequest = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                requestPermissions(permissionRequest, PERMISSION_REQUEST_LOCATION)
+            }
+        }
+    }
+
+    private fun locationUpdates() {
+        locationViewModel = ViewModelProvider(this).get(LocationViewModel::class.java)
+        locationViewModel.getLocationLiveData().observe(viewLifecycleOwner, { location ->
+            val altitude = location.latitude
+            val longitude = location.longitude
+
+            mainFragmentBinding.tvLatitude.text = altitude
+            mainFragmentBinding.tvLongitude.text = longitude
+        })
+    }
+
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         when (requestCode) {
@@ -153,11 +202,10 @@ class MainFragment : Fragment() {
                 mainFragmentBinding.imgView.setImageBitmap(imageBitmap)
             }
             SAVE_PHOTO_IMAGE_REQUEST_CODE -> {
-                val image = data!!.extras!!.get("data") as Bitmap
-                mainFragmentBinding.imgView.setImageBitmap(image)
+                val imageBitmap = data!!.extras!!.get("data") as Bitmap
+                mainFragmentBinding.imgView.setImageBitmap(imageBitmap)
                 Toast.makeText(requireContext(), "saved", Toast.LENGTH_SHORT).show()
             }
-            // CONTOH
             IMAGE_GALLERY_REQUEST -> {
                 if (data != null && data.data != null) {
                     val image = data.data

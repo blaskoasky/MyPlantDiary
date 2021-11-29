@@ -63,4 +63,7 @@ dependencies {
 
     // okhttp
     implementation 'com.squareup.okhttp3:okhttp:4.9.0'
+
+    //gps
+    implementation 'com.google.android.gms:play-services-location:18.0.0'
 }
