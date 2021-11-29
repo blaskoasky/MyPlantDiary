@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.blaskoasky.iri.myplantdiary.R
 import com.blaskoasky.iri.myplantdiary.databinding.MainFragmentBinding
