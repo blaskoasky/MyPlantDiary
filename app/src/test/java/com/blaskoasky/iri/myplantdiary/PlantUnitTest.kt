@@ -5,8 +5,10 @@ import androidx.lifecycle.MutableLiveData
 import com.blaskoasky.iri.myplantdiary.dto.Plant
 import com.blaskoasky.iri.myplantdiary.service.PlantService
 import com.blaskoasky.iri.myplantdiary.ui.main.MainViewModel
+import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
@@ -21,19 +23,19 @@ class PlantUnitTest {
 
     var plantService = mockk<PlantService>()
 
-    // Tes apa
-    @Test
-    fun confirmEasternRedbud_outputsEasternRedbud() {
-        val plant = Plant("Cercis", "canadesis", "Eastern Redbud")
-        assertEquals("Eastern Redbud", plant.toString())
-    }
-
 
     @Test
     fun searchRedbud_returnsRedbud() {
         givenAFeedofPlantMockedDataAreAvailable()
         whenSearchForRedbud()
         thenResultContainsEasternRedbud()
+        thenVerifyFunctionsInvoked()
+    }
+
+    private fun thenVerifyFunctionsInvoked() {
+        verify { plantService.fetchPlants("Redbud") }
+        verify(exactly = 0) { plantService.fetchPlants("Kambing") }
+        confirmVerified(plantService)
     }
 
     private fun givenAFeedofPlantMockedDataAreAvailable() {
@@ -81,6 +83,12 @@ class PlantUnitTest {
             }
         }
         assertTrue(redbudFound)
+    }
+
+    @Test
+    fun confirmEasternRedbud_outputsEasternRedbud() {
+        val plant = Plant("Cercis", "canadesis", "Eastern Redbud")
+        assertEquals("Eastern Redbud", plant.toString())
     }
 
 
