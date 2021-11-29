@@ -1,6 +1,5 @@
 package com.blaskoasky.iri.myplantdiary.ui.main
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.blaskoasky.iri.myplantdiary.dto.Plant
@@ -19,8 +18,13 @@ class MainViewModel : ViewModel() {
         plants = plantService.fetchPlants(plantName)
     }
 
-    var plants : MutableLiveData<ArrayList<Plant>>
-        get() { return _plants }
-        set(value) { _plants = value }
+    // this for giving and receiving data to public
+    var plants: MutableLiveData<ArrayList<Plant>>
+        get() {
+            return _plants
+        }
+        set(value) {
+            _plants = value
+        }
 
 }
