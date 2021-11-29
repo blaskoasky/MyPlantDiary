@@ -1,9 +1,9 @@
 package com.blaskoasky.iri.myplantdiary.ui.main
 
-import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.ImageDecoder
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
@@ -29,6 +29,7 @@ class MainFragment : Fragment() {
         const val CAMERA_PERMISSION_REQUEST_CODE = 3001
         const val CAMERA_REQUEST_CODE = 3002
         const val SAVE_PHOTO_IMAGE_REQUEST_CODE = 3003
+        const val IMAGE_GALLERY_REQUEST = 3004
     }
 
     private lateinit var mainFragmentBinding: MainFragmentBinding
@@ -62,6 +63,17 @@ class MainFragment : Fragment() {
 
         mainFragmentBinding.btnTakePhoto.setOnClickListener {
             prepTakePhoto()
+        }
+
+        mainFragmentBinding.btnGallery.setOnClickListener {
+            prepOpenGallery()
+        }
+    }
+
+    private fun prepOpenGallery() {
+        Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI).apply {
+            type = "image/*"
+            startActivityForResult(this, IMAGE_GALLERY_REQUEST)
         }
     }
 
@@ -105,6 +117,7 @@ class MainFragment : Fragment() {
             takePictureIntent.resolveActivity(requireContext().packageManager)
             if (takePictureIntent != null) {
                 val photoFile: File = createImageFile()
+
                 photoFile?.also {
                     val photoURI = FileProvider.getUriForFile(
                         requireActivity().applicationContext,
@@ -131,11 +144,27 @@ class MainFragment : Fragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == RESULT_OK) {
-            if (requestCode == CAMERA_REQUEST_CODE) {
+        when (requestCode) {
+            CAMERA_REQUEST_CODE -> {
                 val imageBitmap = data!!.extras!!.get("data") as Bitmap
                 mainFragmentBinding.imgView.setImageBitmap(imageBitmap)
             }
+            SAVE_PHOTO_IMAGE_REQUEST_CODE -> {
+                val image = data!!.extras!!.get("data") as Bitmap
+                mainFragmentBinding.imgView.setImageBitmap(image)
+                Toast.makeText(requireContext(), "saved", Toast.LENGTH_SHORT).show()
+            }
+            // CONTOH
+            IMAGE_GALLERY_REQUEST -> {
+                if (data != null && data.data != null) {
+                    val image = data.data
+                    val source =
+                        ImageDecoder.createSource(requireActivity().contentResolver, image!!)
+                    val bitmap = ImageDecoder.decodeBitmap(source)
+                    mainFragmentBinding.imgView.setImageBitmap(bitmap)
+                }
+            }
         }
+
     }
 }
