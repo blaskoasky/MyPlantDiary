@@ -13,14 +13,14 @@ import org.junit.rules.TestRule
 class PlantDataIntegrationTest {
 
     @get:Rule
-    var rule: TestRule =  InstantTaskExecutorRule()
+    var rule: TestRule = InstantTaskExecutorRule()
     lateinit var mvm: MainViewModel
 
     var plantService = mockk<PlantService>()
 
     @Test
-    fun confirmEasternRedbud_outputsEasternRedbud () {
-        var plant: Plant = Plant("Cercis", "canadesis", "Eastern Redbud")
+    fun confirmEasternRedbud_outputsEasternRedbud() {
+        var plant = Plant("Cercis", "canadesis", "Eastern Redbud")
         assertEquals("Eastern Redbud", plant.toString());
     }
 
