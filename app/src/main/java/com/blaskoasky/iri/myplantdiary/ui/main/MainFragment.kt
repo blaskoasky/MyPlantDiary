@@ -53,7 +53,7 @@ class MainFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
 
-        // LiveData Observer
+        // LiveData Observer autocomplete
         viewModel.plants.observe(viewLifecycleOwner, { plants ->
             // adding autocomplete
             mainFragmentBinding.actPlantName.setAdapter(
@@ -64,6 +64,16 @@ class MainFragment : Fragment() {
                 )
             )
         })
+
+        //Live data receiving data
+        viewModel.specimen.observe(viewLifecycleOwner, { specimens ->
+            mainFragmentBinding.spnSpeciments.adapter = ArrayAdapter(
+                requireContext(),
+                R.layout.support_simple_spinner_dropdown_item,
+                specimens
+            )
+        })
+
 
         mainFragmentBinding.btnTakePhoto.setOnClickListener {
             prepTakePhoto()
@@ -146,7 +156,7 @@ class MainFragment : Fragment() {
             if (takePictureIntent != null) {
                 val photoFile: File = createImageFile()
 
-                photoFile?.also {
+                photoFile.also {
                     val photoURI = FileProvider.getUriForFile(
                         requireActivity().applicationContext,
                         "com.blaskoasky.iri.myplantdiary",
