@@ -19,6 +19,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.blaskoasky.iri.myplantdiary.R
 import com.blaskoasky.iri.myplantdiary.databinding.MainFragmentBinding
+import com.blaskoasky.iri.myplantdiary.dto.Specimen
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -70,6 +71,18 @@ class MainFragment : Fragment() {
 
         mainFragmentBinding.btnGallery.setOnClickListener {
             prepOpenGallery()
+        }
+        mainFragmentBinding.btnSave.setOnClickListener {
+            val specimen = Specimen().apply {
+                latitude = mainFragmentBinding.tvLatitude.text.toString()
+                longitude = mainFragmentBinding.tvLongitude.text.toString()
+                plantName = mainFragmentBinding.actPlantName.text.toString()
+                description = mainFragmentBinding.txtDescription.text.toString()
+                datePlanted = mainFragmentBinding.txtDatePlanted.text.toString()
+            }
+            viewModel.save(specimen)
+            Toast.makeText(requireContext(), "document saved", Toast.LENGTH_SHORT).show()
+
         }
         mainFragmentBinding.imgView.setOnClickListener {
             prepOpenGallery()

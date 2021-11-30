@@ -54,7 +54,7 @@ class LocationLiveData(context: Context) : LiveData<LocationDetails>() {
     }
 
     private fun setLocationData(location: Location) {
-        value = LocationDetails(location.altitude.toString(), location.longitude.toString())
+        value = LocationDetails(location.latitude.toString(), location.longitude.toString())
     }
 
     override fun onInactive() {
