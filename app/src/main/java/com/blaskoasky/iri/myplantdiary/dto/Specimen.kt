@@ -9,8 +9,7 @@ data class Specimen(
     var specimenId: String = "",
     var plantId: Int = 0
 ) {
-
     override fun toString(): String {
-        return "$plantName $description $latitude $longitude"
+        return "$plantName , $description , $latitude , $longitude"
     }
 }

@@ -37,7 +37,7 @@ class MainViewModel : ViewModel() {
             }
             // if we are here, we did not encounter an exception
             if (snapshot != null) {
-                // now, we have a populated shapshot
+                // now, we have a populated snapshot
                 val allSpecimens = ArrayList<Specimen>()
                 val documents = snapshot.documents
                 documents.forEach {

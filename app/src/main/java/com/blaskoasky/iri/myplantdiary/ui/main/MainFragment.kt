@@ -94,6 +94,7 @@ class MainFragment : Fragment() {
             Toast.makeText(requireContext(), "document saved", Toast.LENGTH_SHORT).show()
 
         }
+
         mainFragmentBinding.imgView.setOnClickListener {
             prepOpenGallery()
         }
@@ -215,7 +216,6 @@ class MainFragment : Fragment() {
             mainFragmentBinding.tvLongitude.text = longitude
         })
     }
-
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
