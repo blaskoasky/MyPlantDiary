@@ -43,6 +43,7 @@ class MainViewModel : ViewModel() {
                 documents.forEach {
                     val specimen = it.toObject(Specimen::class.java)
                     if (specimen != null) {
+                        specimen.specimenId = it.id
                         allSpecimens.add(specimen)
                     }
                 }

@@ -19,7 +19,11 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.blaskoasky.iri.myplantdiary.R
 import com.blaskoasky.iri.myplantdiary.databinding.MainFragmentBinding
+import com.blaskoasky.iri.myplantdiary.dto.Plant
 import com.blaskoasky.iri.myplantdiary.dto.Specimen
+import com.firebase.ui.auth.AuthUI
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -33,12 +37,15 @@ class MainFragment : Fragment() {
         const val SAVE_PHOTO_IMAGE_REQUEST_CODE = 3003
         const val IMAGE_GALLERY_REQUEST = 3004
         const val PERMISSION_REQUEST_LOCATION = 3005
+        const val AUTH_REQUEST_CODE = 3006
     }
 
     private lateinit var mainFragmentBinding: MainFragmentBinding
     private lateinit var viewModel: MainViewModel
     private lateinit var locationViewModel: LocationViewModel
 
+    private var _plantId = 0
+    private var user: FirebaseUser? = null
     private lateinit var currentPhotoPath: String
 
     override fun onCreateView(
@@ -51,7 +58,7 @@ class MainFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
+        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
 
         // LiveData Observer autocomplete
         viewModel.plants.observe(viewLifecycleOwner, { plants ->
@@ -74,6 +81,11 @@ class MainFragment : Fragment() {
             )
         })
 
+        mainFragmentBinding.actPlantName.setOnItemClickListener { parent, view, position, id ->
+            val selectedPlant = parent.getItemAtPosition(position) as Plant
+            _plantId = selectedPlant.plantId
+        }
+
 
         mainFragmentBinding.btnTakePhoto.setOnClickListener {
             prepTakePhoto()
@@ -83,20 +95,15 @@ class MainFragment : Fragment() {
             prepOpenGallery()
         }
         mainFragmentBinding.btnSave.setOnClickListener {
-            val specimen = Specimen().apply {
-                latitude = mainFragmentBinding.tvLatitude.text.toString()
-                longitude = mainFragmentBinding.tvLongitude.text.toString()
-                plantName = mainFragmentBinding.actPlantName.text.toString()
-                description = mainFragmentBinding.txtDescription.text.toString()
-                datePlanted = mainFragmentBinding.txtDatePlanted.text.toString()
-            }
-            viewModel.save(specimen)
-            Toast.makeText(requireContext(), "document saved", Toast.LENGTH_SHORT).show()
-
+            savePlant()
         }
 
         mainFragmentBinding.imgView.setOnClickListener {
             prepOpenGallery()
+        }
+
+        mainFragmentBinding.btnLogon.setOnClickListener {
+            logon()
         }
 
         prepRequestLocationUpdates()
@@ -217,6 +224,33 @@ class MainFragment : Fragment() {
         })
     }
 
+    private fun savePlant() {
+        val specimen = Specimen().apply {
+            latitude = mainFragmentBinding.tvLatitude.text.toString()
+            longitude = mainFragmentBinding.tvLongitude.text.toString()
+            plantName = mainFragmentBinding.actPlantName.text.toString()
+            description = mainFragmentBinding.txtDescription.text.toString()
+            datePlanted = mainFragmentBinding.txtDatePlanted.text.toString()
+            plantId = _plantId
+        }
+        viewModel.save(specimen)
+        Toast.makeText(requireContext(), "document saved", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun logon() {
+        val providers = arrayListOf(
+            AuthUI.IdpConfig.EmailBuilder().build(),
+            AuthUI.IdpConfig.GoogleBuilder().build()
+        )
+        startActivityForResult(
+            AuthUI.getInstance()
+                .createSignInIntentBuilder()
+                .setAvailableProviders(providers)
+                .build(),
+            AUTH_REQUEST_CODE
+        )
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         when (requestCode) {
@@ -237,6 +271,9 @@ class MainFragment : Fragment() {
                     val bitmap = ImageDecoder.decodeBitmap(source)
                     mainFragmentBinding.imgView.setImageBitmap(bitmap)
                 }
+            }
+            AUTH_REQUEST_CODE -> {
+                user = FirebaseAuth.getInstance().currentUser
             }
         }
 

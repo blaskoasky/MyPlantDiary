@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "464357588204-rmilpi29gr5t2d7v7h0mqdigmqsbpkfe.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.blaskoasky.iri.myplantdiary",
+            "certificate_hash": "f3f1d3044f4a7297a8c477851bc713dec99e63ce"
+          }
+        },
+        {
           "client_id": "464357588204-adhrj43gi0co1krruib9puh35mqnl77v.apps.googleusercontent.com",
           "client_type": 3
         }
