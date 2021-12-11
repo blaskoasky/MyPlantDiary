@@ -229,6 +229,13 @@ class MainFragment : Fragment() {
     }
 
     private fun savePlant() {
+        if (user == null) {
+            Toast.makeText(requireContext(), "Need login", Toast.LENGTH_SHORT).show()
+            logon()
+        }
+
+        user ?: return
+
         var specimen = Specimen().apply {
             latitude = mainFragmentBinding.tvLatitude.text.toString()
             longitude = mainFragmentBinding.tvLongitude.text.toString()
@@ -237,7 +244,7 @@ class MainFragment : Fragment() {
             datePlanted = mainFragmentBinding.txtDatePlanted.text.toString()
             plantId = _plantId
         }
-        viewModel.save(specimen, photos)
+        viewModel.save(specimen, photos, user!!)
         Toast.makeText(requireContext(), "document saved", Toast.LENGTH_SHORT).show()
 
 
