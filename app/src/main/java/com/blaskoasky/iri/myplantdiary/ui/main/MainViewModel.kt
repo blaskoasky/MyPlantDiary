@@ -4,6 +4,7 @@ import android.content.ContentValues.TAG
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.blaskoasky.iri.myplantdiary.dto.Photo
 import com.blaskoasky.iri.myplantdiary.dto.Plant
 import com.blaskoasky.iri.myplantdiary.dto.Specimen
 import com.blaskoasky.iri.myplantdiary.service.PlantService
@@ -56,7 +57,10 @@ class MainViewModel : ViewModel() {
         plants = plantService.fetchPlants(plantName)
     }
 
-    fun save(specimen: Specimen) {
+    fun save(
+        specimen: Specimen,
+        photos: java.util.ArrayList<Photo>
+    ) {
 
         val document = firestore.collection("specimens").document()
         specimen.specimenId = document.id
@@ -64,10 +68,28 @@ class MainViewModel : ViewModel() {
         val set = document.set(specimen)
         set.addOnSuccessListener {
             Log.d("Firebase Save", "document Saved")
+
+            if (photos != null && photos.size > 0) {
+                savePhotos(specimen, photos)
+            }
         }
         set.addOnFailureListener {
             Log.d("Firebase Save", "Save Failed")
         }
+    }
+
+    private fun savePhotos(specimen: Specimen, photos: ArrayList<Photo>) {
+        val collection = firestore.collection("specimens")
+            .document(specimen.specimenId)
+            .collection("photos")
+
+        photos.forEach { photo ->
+            val task = collection.add(photo)
+            task.addOnSuccessListener {
+                photo.id = it.id
+            }
+        }
+
     }
 
     // this for giving and receiving data to public

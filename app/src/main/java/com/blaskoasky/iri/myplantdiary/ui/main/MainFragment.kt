@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
+import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
@@ -19,6 +20,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.blaskoasky.iri.myplantdiary.R
 import com.blaskoasky.iri.myplantdiary.databinding.MainFragmentBinding
+import com.blaskoasky.iri.myplantdiary.dto.Photo
 import com.blaskoasky.iri.myplantdiary.dto.Plant
 import com.blaskoasky.iri.myplantdiary.dto.Specimen
 import com.firebase.ui.auth.AuthUI
@@ -46,6 +48,8 @@ class MainFragment : Fragment() {
 
     private var _plantId = 0
     private var user: FirebaseUser? = null
+    private var photos: ArrayList<Photo> = ArrayList<Photo>()
+    private var photoURI: Uri? = null
     private lateinit var currentPhotoPath: String
 
     override fun onCreateView(
@@ -165,12 +169,12 @@ class MainFragment : Fragment() {
                 val photoFile: File = createImageFile()
 
                 photoFile.also {
-                    val photoURI = FileProvider.getUriForFile(
+                    photoURI = FileProvider.getUriForFile(
                         requireActivity().applicationContext,
                         "com.blaskoasky.iri.myplantdiary",
                         it
                     )
-                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoFile)
+                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
                     startActivityForResult(takePictureIntent, SAVE_PHOTO_IMAGE_REQUEST_CODE)
                 }
             } else {
@@ -225,7 +229,7 @@ class MainFragment : Fragment() {
     }
 
     private fun savePlant() {
-        val specimen = Specimen().apply {
+        var specimen = Specimen().apply {
             latitude = mainFragmentBinding.tvLatitude.text.toString()
             longitude = mainFragmentBinding.tvLongitude.text.toString()
             plantName = mainFragmentBinding.actPlantName.text.toString()
@@ -233,8 +237,13 @@ class MainFragment : Fragment() {
             datePlanted = mainFragmentBinding.txtDatePlanted.text.toString()
             plantId = _plantId
         }
-        viewModel.save(specimen)
+        viewModel.save(specimen, photos)
         Toast.makeText(requireContext(), "document saved", Toast.LENGTH_SHORT).show()
+
+
+        // clear memory
+        specimen = Specimen()
+        photos = ArrayList<Photo>()
     }
 
     private fun logon() {
@@ -259,9 +268,11 @@ class MainFragment : Fragment() {
                 mainFragmentBinding.imgView.setImageBitmap(imageBitmap)
             }
             SAVE_PHOTO_IMAGE_REQUEST_CODE -> {
-                val imageBitmap = data!!.extras!!.get("data") as Bitmap
-                mainFragmentBinding.imgView.setImageBitmap(imageBitmap)
+                /*val imageBitmap = data!!.extras!!.get("data") as Bitmap
+                mainFragmentBinding.imgView.setImageBitmap(imageBitmap)*/
                 Toast.makeText(requireContext(), "saved", Toast.LENGTH_SHORT).show()
+                val photo = Photo(localUri = photoURI.toString())
+                photos.add(photo)
             }
             IMAGE_GALLERY_REQUEST -> {
                 if (data != null && data.data != null) {
